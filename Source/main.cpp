@@ -1,8 +1,33 @@
+#if defined(_WIN32) || (_WIN64)
 
-#include "SDL2/SDL.h"
+	#include "SDL.h"
+
+#endif
+
+#if defined(__APPLE__)
+
+	#include "SDL2/SDL.h"
+
+#endif
+
 #include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 int main(int argc, char* argv[]) {
+
+#if defined(_WIN32) || (_WIN64)
+
+	cout << "Running on Windows..." << endl;
+
+#endif
+
+#if defined(__APPLE__)
+
+	cout << "Running on Apple..." << endl;
+
+#endif
 
     SDL_Window *window;                    // Declare a pointer
 
