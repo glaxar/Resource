@@ -50,8 +50,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+//    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+//    int x = 0, y = 0;
+    //SDL_Surface *background = 0;
+
     //The surface contained by the window
     SDL_Surface* screenSurface = NULL;
+    //Image to load on screen
+    SDL_Surface* background = NULL;
 
     //Get window surface
     screenSurface = SDL_GetWindowSurface(window);
@@ -63,6 +69,35 @@ int main(int argc, char* argv[]) {
     SDL_UpdateWindowSurface(window);
 
     // The window is open: could enter program loop here (see SDL_PollEvent())
+
+    bool running = true;
+    while(running)
+    {
+    	SDL_Event event;
+
+    	while(SDL_PollEvent(&event))
+    	{
+    		switch(event.type)
+    		{
+    		case SDL_QUIT:
+    			running = false;
+    			//Close and destroy window
+    			SDL_DestroyWindow(window);
+    			break;
+    		case SDL_KEYDOWN:
+    			switch(event.key.keysym.sym)
+    			{
+    			case SDLK_ESCAPE:
+    				running = false;
+    				//Close and destroy window
+    				SDL_DestroyWindow(window);
+    				break;
+    			}
+    		}
+
+    	}
+
+    }
 
     SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
 
