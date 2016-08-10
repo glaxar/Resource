@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 	cout << "Running on Apple..." << endl;
 
 	//String var to hold the current working directory on __APPLE__
-	stirng currentWorkingDirectory(getcwd(NULL, 0));
+	string currentWorkingDirectory(getcwd(NULL, 0));
 
 	//Create a string to link to the images folder on __APPLE__
 	string images_dir = currentWorkingDirectory + "/Resources/Images/";
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
 	//Create in game texture - background 1
 	SDL_Texture *background1;
 
-	//Place srface with image to display in the texture
+	//Place surface with image to display in the texture
 	background1 = SDL_CreateTextureFromSurface(ren, surface);
 
 	//free the SDL surface
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
 	//Create in game texture - turret
 	SDL_Texture *turret;
 
-	//Place srface with image to display in the texture
+	//Place surface with image to display in the texture
 	turret = SDL_CreateTextureFromSurface(ren, surface3);
 
 	//free the SDL surface
@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
 	//Create in game texture - turret
 	SDL_Texture *pBullet;
 
-	//Place srface with image to display in the texture
+	//Place surface with image to display in the texture
 	pBullet = SDL_CreateTextureFromSurface(ren, surface4);
 
 	//free the SDL surface
@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
 	//Create in game texture - turret
 	SDL_Texture *tBullet;
 
-	//Place srface with image to display in the texture
+	//Place surface with image to display in the texture
 	tBullet = SDL_CreateTextureFromSurface(ren, surface5);
 
 	//free the SDL surface
