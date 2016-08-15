@@ -23,6 +23,8 @@
 #include <iostream>
 #include <ctime>
 
+#include "bat.h"
+
 using namespace std;
 
 //variables for the background movement and position
@@ -50,6 +52,10 @@ int pBulletDir = 0;
 // vars for playerHealth and bullet health
 int pHealth = 10;
 int eHealth = 5;
+
+//regulates the attack
+float attackTime = 0.0f;
+float attackRate = 1000.0f; //milliseconds
 
 //Background float vars for movement
 float b1Pos_X = 0, b1Pos_Y = 0;
@@ -103,6 +109,13 @@ class player
 
 };
 
+void playerHit()
+{
+	//player hurt
+	pHealth -= 1;
+	cout << pHealth << endl;
+}
+
 int main(int argc, char* argv[]) {
 
 #if defined(_WIN32) || (_WIN64)
@@ -149,7 +162,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	//Create a renderervariable - pointer
+	//Create a renderer variable - pointer
 	SDL_Renderer *ren = NULL;
 
 	//Create renderer
@@ -191,7 +204,7 @@ int main(int argc, char* argv[]) {
 
 	// Set the x, y, width and height SDL Rectangle values
 	playerRect.x = 200;
-	playerRect.y = 400;
+	playerRect.y = 360;
 	playerRect.w = 50;
 	playerRect.h = 50;
 
@@ -209,13 +222,19 @@ int main(int argc, char* argv[]) {
 	//free the SDL surface
 	SDL_FreeSurface(surface3);
 
-	//The rectangle which has the xPos, yPos, texture width and texture height - background1
+	//The rectangle which has the xPos, yPos, texture width and texture height - turret1
 	turretRect.x = 400;
-	turretRect.y = 400;
+	turretRect.y = 340;
 	turretRect.w = 50;
 	turretRect.h = 50;
 
 	/////////////////Create turret - END
+
+	/////////////////Create bat - START
+
+	Bat bat1 = Bat(ren, images_dir.c_str(), 300, 370);
+
+	/////////////////Create bat - END
 
 	/////////////////Create player bullet - START
 
@@ -376,18 +395,19 @@ int main(int argc, char* argv[]) {
 
 		double calcdistance = sqrt(distancex + distancey);
 
-		if (calcdistance <= 600) {
+		if (calcdistance <= 230 && eHealth >= 1) {
 			turretActive = true;
+			cout << turretActive << endl;
 
 			//random number 1 - 10 (higher number, slower fire rate
-			int random_number = std::rand() % 50;
+			int random_number = std::rand() % 5;
 
 			// check to see if bullet is not already active and random number equals 5
 			if ((eBulletActive) == false && (random_number == 5)) {
 
 				// move to player's position
-				eBulletRect.x = turretRect.x;
-				eBulletRect.y = (turretRect.y + (turretRect.h / 2));
+				tBulletPos.x = turretRect.x;
+				tBulletPos.y = (turretRect.y + (turretRect.h / 2));
 
 				// check to see if the player is to the left or right of the turret and set the
 				// player's bulletDir as needed
@@ -407,16 +427,18 @@ int main(int argc, char* argv[]) {
 		}
 		//if the enemy bullet is active - update
 		if (eBulletActive) {
-			eBulletRect.x += eBulletDir;
+			tBulletPos.x += eBulletDir;
 		}
 
 		// check for off screen - LEFT or RIGHT
-		if (eBulletRect.x > 1024 || eBulletRect.x < 0) {
+		if (tBulletPos.x > 1024 || tBulletPos.x < 0) {
 			eBulletActive = false;
-			eBulletRect.x = -200;
-			eBulletRect.y = -200;
+			tBulletPos.x = -200;
+			tBulletPos.y = -200;
 			eBulletDir = 0;
 		}
+
+		bat1.Update(deltaTime, playerRect);
 
 		//if the player bullet is active - update
 		if (pBulletActive) {
@@ -432,12 +454,12 @@ int main(int argc, char* argv[]) {
 		}
 
 		//player collision with turret bullet
-		if (SDL_HasIntersection(&playerRect, &eBulletRect)) {
+		if (SDL_HasIntersection(&playerRect, &tBulletPos)) {
 
 			//reset enemy bullet
 			eBulletActive = false;
-			eBulletRect.x = -200;
-			eBulletRect.y = -200;
+			tBulletPos.x = -200;
+			tBulletPos.y = -200;
 			eBulletDir = 0;
 
 			//player hurt
@@ -458,21 +480,53 @@ int main(int argc, char* argv[]) {
 			//subtract player health
 			eHealth -= 1;
 			cout << eHealth << endl;
+			//if (eHealth <= 0)
+			//	turretActive = false;
 		}
 
 		//turret collision with player bullet while NOT active
 		if (SDL_HasIntersection(&turretRect, &pBulletPos) && turretActive == false) {
+
+			////reset player bullet
+			//pBulletActive = false;
+			//pBulletPos.x = -200;
+			//pBulletPos.y = -200;
+			//pBulletDir = 0;
+		}
+
+		//bat collision with player
+		if (SDL_HasIntersection(&playerRect, &bat1.batRect)) {
+			if (SDL_GetTicks() > attackTime)
+			{
+				playerHit();
+				attackTime = SDL_GetTicks() + 1000;
+			}
+		}
+
+		//bat collision with player bullet while active
+		if (SDL_HasIntersection(&bat1.batRect, &pBulletPos) && bat1.alive == true) {
 
 			//reset player bullet
 			pBulletActive = false;
 			pBulletPos.x = -200;
 			pBulletPos.y = -200;
 			pBulletDir = 0;
+
+			//subtract player health
+			bat1.health -= 1;
+			cout << bat1.health << endl;
+			//if (eHealth <= 0)
+			//	turretActive = false;
 		}
 
 		SDL_RenderClear(ren);
 
 		SDL_RenderCopy(ren, background1, NULL, &bg1Pos);
+
+		if (bat1.health > 0)
+		{
+			bat1.Draw(ren);
+		}
 
 		//draw enemy bullet
 		if (eBulletActive) {
