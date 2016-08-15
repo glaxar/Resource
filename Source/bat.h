@@ -51,7 +51,8 @@ public:
 
 	void move(float batSpeed, float deltaTime);
 
-	float posX;
+	float posX, posY;
+	//float posY;
 
 	void Draw(SDL_Renderer *ren);
 

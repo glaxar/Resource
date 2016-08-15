@@ -16,6 +16,8 @@ Bat::Bat(SDL_Renderer *ren, string filePath, float x, float y)
 	batRect.y = y;
 	batRect.w = 30;
 	batRect.h = 30;
+	posX = x;
+	posY = y;
 
 	//initialize bat direction
 	xBat = 1;
@@ -25,11 +27,14 @@ Bat::Bat(SDL_Renderer *ren, string filePath, float x, float y)
 	batCenter.y = batRect.h / 2;
 
 	speed = 10;
+
+
 }
 
 void Bat::move(float batSpeed, float deltaTime)
 {
 	posX += batSpeed * deltaTime;
+	posY += batSpeed * deltaTime;
 
 	batRect.x = (int)(posX + 0.5f);
 }
@@ -37,11 +42,15 @@ void Bat::move(float batSpeed, float deltaTime)
 
 void Bat::Update(float deltaTime, SDL_Rect player)
 {
-	double distX = batRect.x - player.x;
+	double distX = abs(batRect.x) - abs(player.x);
+	float moveX = speed;
+	float moveY = speed;
 
-	if (distX <= 240)
+
+	if (distX <= 230)
 	{
 		active = true;
+		//cout << active << endl;
 	}
 	else
 	{
@@ -50,9 +59,19 @@ void Bat::Update(float deltaTime, SDL_Rect player)
 
 	if (active == true)
 	{
-		float moveX = speed;
-		posX += moveX * deltaTime;
+		if(batRect.x > player.x)
+		{
+			posX -= moveX * deltaTime;
+		}
+		else
+		{
+			posX += moveX * deltaTime;
+		}
+
+		//posX += moveX * deltaTime;
+		//posY += moveY * deltaTime;
 		batRect.x = (int)(posX + 0.5f);
+		batRect.y = (int)(posY + 0.5f);
 	}
 
 	if (SDL_GetTicks() > attackTime)

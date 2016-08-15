@@ -16,6 +16,7 @@
 
 #include "SDL2/SDL.h"
 #include "SDL2_image/SDL_image.h"
+#include "unistd.h"
 
 #endif
 
@@ -137,7 +138,7 @@ int main(int argc, char* argv[]) {
 	string currentWorkingDirectory(getcwd(NULL, 0));
 
 	//Create a string to link to the images folder on __APPLE__
-	string images_dir = currentWorkingDirectory + "/Resources/Images/";
+	string images_dir = currentWorkingDirectory + "/Resource/Images/";
 
 #endif
 
@@ -320,7 +321,7 @@ int main(int argc, char* argv[]) {
 				{
 					switch (event.key.keysym.sym)
 					{
-						//case keyboardmovement
+						//case keyboard movement
 					case SDLK_ESCAPE:
 						running = false;
 						break;
@@ -397,7 +398,7 @@ int main(int argc, char* argv[]) {
 
 		if (calcdistance <= 230 && eHealth >= 1) {
 			turretActive = true;
-			cout << turretActive << endl;
+			//cout << turretActive << endl;
 
 			//random number 1 - 10 (higher number, slower fire rate
 			int random_number = std::rand() % 5;
@@ -438,6 +439,7 @@ int main(int argc, char* argv[]) {
 			eBulletDir = 0;
 		}
 
+		cout << bat1.active << endl;
 		bat1.Update(deltaTime, playerRect);
 
 		//if the player bullet is active - update
