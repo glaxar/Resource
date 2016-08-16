@@ -25,6 +25,7 @@
 #include <ctime>
 
 #include "bat.h"
+#include "pickup.h"
 
 using namespace std;
 
@@ -237,6 +238,119 @@ int main(int argc, char* argv[]) {
 
 	/////////////////Create bat - END
 
+	/////////////////Create HUD - START
+	
+	SDL_Texture * Keysbkgd = IMG_LoadTexture(renderer, (s_cwd_images + "keysBKGD.png").c_str());
+	SDL_Rect keysbkgdRect;
+	keysbkgdRect.x = 370;
+	keysbkgdRect.y = 10;
+	keysbkgdRect.w = 284;
+	keysbkgdRect.h = 91;
+
+	SDL_Texture * Keysfront = IMG_LoadTexture(renderer, (s_cwd_images + "keysFront.png").c_str());
+	SDL_Rect KeysfrontRect;
+	KeysfrontRect.x = 370;
+	KeysfrontRect.y = 10;
+	KeysfrontRect.w = 284;
+	KeysfrontRect.h = 91;
+
+
+
+	SDL_Texture * key1 = IMG_LoadTexture(renderer, (s_cwd_images + "keys1.png").c_str());
+	SDL_Rect key1Pos;
+
+	key1Pos.x = 370;
+	key1Pos.y = 10;
+	key1Pos.w = 284;
+	key1Pos.h = 91;
+
+	SDL_Texture * key2 = IMG_LoadTexture(renderer, (s_cwd_images + "keys2.png").c_str());
+	SDL_Rect key2Pos;
+	key2Pos.x = 370;
+	key2Pos.y = 10;
+	key2Pos.w = 284;
+	key2Pos.h = 91;
+
+
+	SDL_Texture * key3 = IMG_LoadTexture(renderer, (s_cwd_images + "keys3.png").c_str());
+	SDL_Rect key3Pos;
+	key3Pos.x = 370;
+	key3Pos.y = 10;
+	key3Pos.w = 284;
+	key3Pos.h = 91;
+
+	SDL_Texture * key4 = IMG_LoadTexture(renderer, (s_cwd_images + "keys4.png").c_str());
+	SDL_Rect key4Pos;
+	key4Pos.x = 370;
+	key4Pos.y = 10;
+	key4Pos.w = 284;
+	key4Pos.h = 91;
+
+
+	bool haveKey[4] = { false, false, false, false };
+
+	for (int i = 0; i < 4; i++)
+	{
+		Jewel tempKey(renderer, s_cwd_images.c_str(), 0, 200.0f, 200.0f);
+		keyList.push_back(tempKey);
+	}
+	//Jewel purpleJewel(renderer, s_cwd_images.c_str(), 0, 200.0f, 200.0f);
+	//Jewel redJewel(renderer, s_cwd_images.c_str(), 1, 400.0f, 300.0f);	
+	//Jewel blueJewel(renderer, s_cwd_images.c_str(), 2, 600.0f, 200.0f);
+
+
+
+	//*****	*	*	**	*	**	*	*	*	*	*	**********				**	*	*	*	*	**	*	*	* Scrap STUFF
+
+	//scrap UI
+	SDL_Texture *scrapB = IMG_LoadTexture(renderer, (s_cwd_images + "scrapBKGD.png").c_str());
+	SDL_Texture *scrapM = IMG_LoadTexture(renderer, (s_cwd_images + "scrapBar.png").c_str());
+	SDL_Texture *scrapF = IMG_LoadTexture(renderer, (s_cwd_images + "scrapFront.png").c_str());
+
+	SDL_Rect scrapRect;
+	scrapRect.x = 10;
+	scrapRect.y = 110;
+	scrapRect.w = 368;
+	scrapRect.h = 65;
+
+	SDL_Rect movingRect;
+	movingRect.x = 101;
+	movingRect.y = 125;
+	movingRect.w = 272;
+	movingRect.h = 27;
+
+	//scrap info
+	float currentScrap = 0.0f;
+	float maxScrap = 100.0f;
+
+
+
+	//create a pool of explosions - 20
+	for (int i = 0; i < 20; i++) {
+		//create the explosion
+		Explode tmpExplode(renderer, s_cwd_images, -1000, -1000, 0);
+
+		//add to explodeList
+		explodeList.push_back(tmpExplode);
+	}
+
+	//create a pool of vapor - 20
+	for (int i = 0; i < 20; i++) {
+		//create the explosion
+		Explode tmpExplode(renderer, s_cwd_images, -1000, -1000, 1);
+
+		//add to vaporList
+		vaporList.push_back(tmpExplode);
+	}
+
+	//create the list of scrap pickups
+	for (int i = 0; i < 10; i++)
+	{
+		scrapList.push_back(new Jewel(renderer, s_cwd_images.c_str(), 3, 20.0f, 350.0f));
+	}
+
+	/////////////////Create HUD - END
+
 	/////////////////Create player bullet - START
 
 	//Create the SDL surface to hold the texture file
@@ -362,11 +476,23 @@ int main(int argc, char* argv[]) {
 					{
 						//move right
 					case SDLK_RIGHT:
+					{
+						if (pBulletActive == false)
+						{
+							pBulletDir = 5;
+						}
 						playerX -= playerVel;
+					}
 						break;
 						//move left
 					case SDLK_LEFT:
+					{
+						if (pBulletActive == false)
+						{
+							pBulletDir = -5;
+						}
 						playerX += playerVel;
+					}
 						break;
 					}
 				}
