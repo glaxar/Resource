@@ -15,11 +15,11 @@ using namespace std;
 class Pickup
 {
 public:
-	bool active;
+	bool active = true;
 
 	SDL_Texture *pickup;
 
-	SDL_Rect pickupRect;
+	SDL_Rect pickupRect, crossRect, keyRect, rockRect, healthRect, ammoRect, invHUDRect, hBotRect, hRedRect, ammoHUDRect;
 
 	float pickupX, pickupY;
 

@@ -34,7 +34,7 @@ using namespace std;
 int bgSpeed = 100;
 
 //Create the SDL rectangle for the background texture's position and size - background1
-SDL_Rect bg1Pos, playerRect, pBulletPos, tBulletPos, turretRect, eBulletRect;
+SDL_Rect bg1Pos, playerRect, pBulletPos, tBulletPos, turretRect, eBulletRect, crossPos, keyPos, rockPos;
 
 
 int playerVel = 4;
@@ -42,7 +42,7 @@ float playerX = 0.0f;
 float playerY = 0.0f;
 
 // boolean to see if the turret is active
-bool turretActive = false;
+bool turretActive = false, crossInvActive = false, keyInvActive = false, rockInvActive = false, crossActive = true, keyActive = true, rockActive = true;
 
 //basic vars for simple player(p)/enemy(e) bullet fire with 1 bullet each
 bool eBulletActive = true;
@@ -55,12 +55,14 @@ int pBulletDir = 0;
 int pHealth = 10;
 int eHealth = 5;
 
+int pAmmo = 8;
+
 //regulates the attack
 float attackTime = 0.0f;
 float attackRate = 1000.0f; //milliseconds
 
 //Background float vars for movement
-float b1Pos_X = 0, b1Pos_Y = 0;
+float b1Pos_X = 0, b1Pos_Y = -768;
 //float b2Pos_X = 0, b2Pos_Y = -768;
 
 //deltaTime var initialization - for frame rate independence
@@ -68,48 +70,37 @@ float deltaTime = 0.0;
 int thisTime = 0;
 int lastTime = 0;
 
-void Background()
+void Background(float deltaTime)
 {
 	//Update bg1 float position values
 	b1Pos_Y += (bgSpeed * 1) * deltaTime;
 	bg1Pos.y = (int)(b1Pos_Y + 0.5f);
 
-	//Reset the float position values of bg1 when off the bottom of the screen
-	if (bg1Pos.y >= 768)
-	{
-		bg1Pos.y = -768;
-		b1Pos_Y = bg1Pos.y;
-	}
-
-	////Update bg2 float position values
-	//b2Pos_Y += (bgSpeed * 1) * deltaTime;
-	//bg2Pos.y = (int)(b2Pos_Y + 0.5f);
-
-	////Reset the float position values of bg2 when off the bottom of the screen
-	//if (bg2Pos.y >= 768)
-	//{
-	//	bg2Pos.y = -768;
-	//	b2Pos_Y = bg2Pos.y;
-	//}
+//	//Reset the float position values of bg1 when off the bottom of the screen
+//	if (bg1Pos.y >= 768)
+//	{
+//		bg1Pos.y = -768;
+//		b1Pos_Y = bg1Pos.y;
+//	}
 }
 
-class turret
-{
-	//turret active?
-	bool active = false;
+//class turret
+//{
+//	//turret active?
+//	bool active = false;
+//
+//	//turret health
+//	int tHealth = 10;
+//
+//	//random number seed
+//	//srand(time(NULL));
+//};
 
-	//turret health
-	int tHealth = 10;
-
-	//random number seed
-	//srand(time(NULL));
-};
-
-class player
-{
-	int pHealth = 10;
-
-};
+//class player
+//{
+//	int pHealth = 10;
+//
+//};
 
 void playerHit()
 {
@@ -186,13 +177,14 @@ int main(int argc, char* argv[]) {
 
 	//The rectangle which has the xPos, yPos, texture width and texture height - background1
 	bg1Pos.x = 0;
-	bg1Pos.y = 0;
-	bg1Pos.w = 1024;
-	bg1Pos.h = 768;
+	bg1Pos.y = -768;
+	bg1Pos.w = 3072;
+	bg1Pos.h = 2304;
+
 
 	/////////////////Create Backgrounds - END
 
-	//create a SDL surface to hold the background image
+	//create a SDL surface to hold the player image
 	SDL_Surface *surface2 = IMG_Load((images_dir + "player.png").c_str());
 
 	// SDL Texture
@@ -206,9 +198,9 @@ int main(int argc, char* argv[]) {
 
 	// Set the x, y, width and height SDL Rectangle values
 	playerRect.x = 200;
-	playerRect.y = 360;
-	playerRect.w = 50;
-	playerRect.h = 50;
+	playerRect.y = 370;
+	playerRect.w = 85;
+	playerRect.h = 85;
 
 	/////////////////Create turret - START
 
@@ -227,8 +219,8 @@ int main(int argc, char* argv[]) {
 	//The rectangle which has the xPos, yPos, texture width and texture height - turret1
 	turretRect.x = 400;
 	turretRect.y = 340;
-	turretRect.w = 50;
-	turretRect.h = 50;
+	turretRect.w = 85;
+	turretRect.h = 85;
 
 	/////////////////Create turret - END
 
@@ -240,116 +232,39 @@ int main(int argc, char* argv[]) {
 
 	/////////////////Create HUD - START
 	
-	SDL_Texture * Keysbkgd = IMG_LoadTexture(renderer, (s_cwd_images + "keysBKGD.png").c_str());
-	SDL_Rect keysbkgdRect;
-	keysbkgdRect.x = 370;
-	keysbkgdRect.y = 10;
-	keysbkgdRect.w = 284;
-	keysbkgdRect.h = 91;
+	Pickup cross = Pickup(ren, images_dir.c_str(), 0, 480, 370);
+	Pickup key = Pickup(ren, images_dir.c_str(), 1, 80, 370);
+	Pickup rock = Pickup(ren, images_dir.c_str(), 2, 580, 370);
+	Pickup health = Pickup(ren, images_dir.c_str(), 3, 250, 320);
+	Pickup ammo = Pickup(ren, images_dir.c_str(), 4, 250, 350);
+	Pickup invHUD = Pickup(ren, images_dir.c_str(), 5, 100, 100);
+	Pickup healthBottle = Pickup(ren, images_dir.c_str(), 6, 100, 550);
+	Pickup healthRed = Pickup(ren, images_dir.c_str(), 7, 100, 550);
+	Pickup ammoHUD = Pickup(ren, images_dir.c_str(), 8, 900, 550);
+	Pickup crossI = Pickup(ren, images_dir.c_str(), 0, 40, 60);
+	Pickup keyI = Pickup(ren, images_dir.c_str(), 1, 160, 60);
+	Pickup rockI = Pickup(ren, images_dir.c_str(), 2, 100, 160);
 
-	SDL_Texture * Keysfront = IMG_LoadTexture(renderer, (s_cwd_images + "keysFront.png").c_str());
-	SDL_Rect KeysfrontRect;
-	KeysfrontRect.x = 370;
-	KeysfrontRect.y = 10;
-	KeysfrontRect.w = 284;
-	KeysfrontRect.h = 91;
-
-
-
-	SDL_Texture * key1 = IMG_LoadTexture(renderer, (s_cwd_images + "keys1.png").c_str());
-	SDL_Rect key1Pos;
-
-	key1Pos.x = 370;
-	key1Pos.y = 10;
-	key1Pos.w = 284;
-	key1Pos.h = 91;
-
-	SDL_Texture * key2 = IMG_LoadTexture(renderer, (s_cwd_images + "keys2.png").c_str());
-	SDL_Rect key2Pos;
-	key2Pos.x = 370;
-	key2Pos.y = 10;
-	key2Pos.w = 284;
-	key2Pos.h = 91;
-
-
-	SDL_Texture * key3 = IMG_LoadTexture(renderer, (s_cwd_images + "keys3.png").c_str());
-	SDL_Rect key3Pos;
-	key3Pos.x = 370;
-	key3Pos.y = 10;
-	key3Pos.w = 284;
-	key3Pos.h = 91;
-
-	SDL_Texture * key4 = IMG_LoadTexture(renderer, (s_cwd_images + "keys4.png").c_str());
-	SDL_Rect key4Pos;
-	key4Pos.x = 370;
-	key4Pos.y = 10;
-	key4Pos.w = 284;
-	key4Pos.h = 91;
-
-
-	bool haveKey[4] = { false, false, false, false };
-
-	for (int i = 0; i < 4; i++)
-	{
-		Jewel tempKey(renderer, s_cwd_images.c_str(), 0, 200.0f, 200.0f);
-		keyList.push_back(tempKey);
-	}
-	//Jewel purpleJewel(renderer, s_cwd_images.c_str(), 0, 200.0f, 200.0f);
-	//Jewel redJewel(renderer, s_cwd_images.c_str(), 1, 400.0f, 300.0f);	
-	//Jewel blueJewel(renderer, s_cwd_images.c_str(), 2, 600.0f, 200.0f);
-
-
-
-	//*****	*	*	**	*	**	*	*	*	*	*	**********				**	*	*	*	*	**	*	*	* Scrap STUFF
-
-	//scrap UI
-	SDL_Texture *scrapB = IMG_LoadTexture(renderer, (s_cwd_images + "scrapBKGD.png").c_str());
-	SDL_Texture *scrapM = IMG_LoadTexture(renderer, (s_cwd_images + "scrapBar.png").c_str());
-	SDL_Texture *scrapF = IMG_LoadTexture(renderer, (s_cwd_images + "scrapFront.png").c_str());
-
-	SDL_Rect scrapRect;
-	scrapRect.x = 10;
-	scrapRect.y = 110;
-	scrapRect.w = 368;
-	scrapRect.h = 65;
-
-	SDL_Rect movingRect;
-	movingRect.x = 101;
-	movingRect.y = 125;
-	movingRect.w = 272;
-	movingRect.h = 27;
-
-	//scrap info
-	float currentScrap = 0.0f;
-	float maxScrap = 100.0f;
-
-
-
-	//create a pool of explosions - 20
-	for (int i = 0; i < 20; i++) {
-		//create the explosion
-		Explode tmpExplode(renderer, s_cwd_images, -1000, -1000, 0);
-
-		//add to explodeList
-		explodeList.push_back(tmpExplode);
-	}
-
-	//create a pool of vapor - 20
-	for (int i = 0; i < 20; i++) {
-		//create the explosion
-		Explode tmpExplode(renderer, s_cwd_images, -1000, -1000, 1);
-
-		//add to vaporList
-		vaporList.push_back(tmpExplode);
-	}
-
-	//create the list of scrap pickups
-	for (int i = 0; i < 10; i++)
-	{
-		scrapList.push_back(new Jewel(renderer, s_cwd_images.c_str(), 3, 20.0f, 350.0f));
-	}
 
 	/////////////////Create HUD - END
+
+	//Create the SDL surface to hold the texture file
+		SDL_Surface *surface = IMG_Load((images_dir + "cross.png").c_str());
+
+		//Create in game texture - background 1
+		SDL_Texture *cross;
+
+		//Place surface with image to display in the texture
+		cross = SDL_CreateTextureFromSurface(ren, surface);
+
+		//free the SDL surface
+		SDL_FreeSurface(surface);
+
+		//The rectangle which has the xPos, yPos, texture width and texture height - inventory cross
+		bg1Pos.x = 40;
+		bg1Pos.y = 60;
+		bg1Pos.w = 40;
+		bg1Pos.h = 40;
 
 	/////////////////Create player bullet - START
 
@@ -367,9 +282,9 @@ int main(int argc, char* argv[]) {
 
 	//The rectangle which has the xPos, yPos, texture width and texture height - background1
 	pBulletPos.x = -200;
-	pBulletPos.y = -200;
-	pBulletPos.w = 16;
-	pBulletPos.h = 16;
+	pBulletPos.y = -768;
+	pBulletPos.w = 32;
+	pBulletPos.h = 32;
 
 	/////////////////Create player bullet - END
 
@@ -394,6 +309,21 @@ int main(int argc, char* argv[]) {
 	tBulletPos.h = 16;
 
 	/////////////////Create enemy bullet - END
+
+	crossPos.x = 70;
+	crossPos.y = 120;
+	crossPos.w = 70;
+	crossPos.h = 70;
+
+	keyPos.x = 130;
+	keyPos.y = 120;
+	keyPos.w = 70;
+	keyPos.h = 70;
+
+	rockPos.x = 100;
+	rockPos.y = 120;
+	rockPos.w = 70;
+	rockPos.h = 70;
 
 //    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 //    int x = 0, y = 0;
@@ -449,7 +379,7 @@ int main(int argc, char* argv[]) {
 						break;
 					case SDLK_SPACE:
 						// check to see if bullet is not already active
-						if (pBulletActive == false)
+						if (pBulletActive == false && pAmmo > 0)
 						{
 
 							// move to player's position
@@ -466,6 +396,9 @@ int main(int argc, char* argv[]) {
 							}
 							// active bullet
 							pBulletActive = true;
+
+							pAmmo -= 1;
+							cout << pAmmo << endl;
 						}
 						break;
 					}
@@ -499,6 +432,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
+		Background(deltaTime);
 
 		playerRect.x += playerX;
 
@@ -565,7 +499,7 @@ int main(int argc, char* argv[]) {
 			eBulletDir = 0;
 		}
 
-		cout << bat1.active << endl;
+		//cout << bat1.active << endl;
 		bat1.Update(deltaTime, playerRect);
 
 		//if the player bullet is active - update
@@ -647,6 +581,54 @@ int main(int argc, char* argv[]) {
 			//	turretActive = false;
 		}
 
+		//player collision with turret bullet
+				if (SDL_HasIntersection(&playerRect, &tBulletPos)) {
+
+					//reset enemy bullet
+					crossActive = false;
+					crossInvActive = true;
+					tBulletPos.x = -200;
+					tBulletPos.y = -200;
+					eBulletDir = 0;
+
+
+				}
+				//player collision with turret bullet
+						if (SDL_HasIntersection(&playerRect, &tBulletPos)) {
+
+							//reset enemy bullet
+							keyActive = false;
+							keyInvActive = true;
+							tBulletPos.x = -200;
+							tBulletPos.y = -200;
+							eBulletDir = 0;
+
+
+						}
+						//player collision with turret bullet
+						if (SDL_HasIntersection(&playerRect, &tBulletPos)) {
+
+							//reset enemy bullet
+							rockActive = false;
+							rockInvActive = true;
+							tBulletPos.x = -200;
+							tBulletPos.y = -200;
+							eBulletDir = 0;
+
+
+						}
+		if(SDL_HasIntersection(&health.healthRect, &playerRect))
+		{
+			pHealth = 10;
+		}
+
+		if(SDL_HasIntersection(&ammo.ammoRect, &playerRect))
+		{
+			pAmmo = 8;
+		}
+
+		Background(deltaTime);
+
 		SDL_RenderClear(ren);
 
 		SDL_RenderCopy(ren, background1, NULL, &bg1Pos);
@@ -654,6 +636,44 @@ int main(int argc, char* argv[]) {
 		if (bat1.health > 0)
 		{
 			bat1.Draw(ren);
+		}
+
+		if(cross.active == true)
+		{
+			cross.Draw(ren);
+		}
+		if(key.active == true)
+		{
+			key.Draw(ren);
+		}
+		if(rock.active == true)
+		{
+			rock.Draw(ren);
+		}
+		if(health.active == true)
+		{
+			health.Draw(ren);
+		}
+		if(ammo.active == true)
+		{
+			ammo.Draw(ren);
+		}
+		if(invHUD.active == true)
+		{
+			invHUD.Draw(ren);
+		}
+
+		if(healthRed.active == true)
+		{
+			healthRed.Draw(ren);
+		}
+		if(healthBottle.active == true)
+		{
+			healthBottle.Draw(ren);
+		}
+		if(ammoHUD.active == true)
+		{
+			ammoHUD.Draw(ren);
 		}
 
 		//draw enemy bullet
@@ -674,6 +694,18 @@ int main(int argc, char* argv[]) {
 		if (eHealth > 0)
 		{
 			SDL_RenderCopy(ren, turret, NULL, &turretRect);
+		}
+		if(crossI.active == true)
+		{
+			crossI.Draw(ren);
+		}
+		if(keyI.active == true)
+		{
+			keyI.Draw(ren);
+		}
+		if(rockI.active == true)
+		{
+			rockI.Draw(ren);
 		}
 
 		SDL_RenderPresent(ren);
